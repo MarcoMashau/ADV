@@ -39,7 +39,7 @@ class Program
                         '>' => 1,
                         'v' => 2,
                         '<' => 3,
-                        _ => directionIndex
+                        _ => directionIndex  //if nothing matches the above, keep the current value. more like 'default' in a switch case. 
                     };
 
                     break;

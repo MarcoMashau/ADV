@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 class Program
@@ -20,18 +19,33 @@ class Program
 
     static long Calculate(string input, Func<long, long, List<long>, bool> checker)
     {
-        return input.Split('\n')
-            .Select(line => Regex.Matches(line, @"\d+").Select(m => long.Parse(m.Value)).ToList())
-            .Where(parts => parts.Count > 1 && checker(parts[0], parts[1], parts.Skip(2).ToList()))
-            .Sum(parts => parts[0]);
+        long total = 0;
+        string[] lines = input.Split('\n');
+
+        foreach (string line in lines)
+        {
+            List<long> parts = new List<long>();
+            foreach (Match match in Regex.Matches(line, @"\d+"))
+            {
+                parts.Add(long.Parse(match.Value));
+            }
+
+            if (parts.Count > 1 && checker(parts[0], parts[1], parts.GetRange(2, parts.Count - 2)))
+            {
+                total += parts[0];
+            }
+        }
+        return total;
     }
 
-    static bool CalculateCalibration(long target, long acc, List<long> nums)
+    static bool CalculateCalibration(long target, long currentTotal, List<long> nums)
     {
-        if (acc > target) return false;
-        if (!nums.Any()) return target == acc;
-        return CalculateCalibration(target, acc + nums[0], nums.Skip(1).ToList()) ||
-               CalculateCalibration(target, acc * nums[0], nums.Skip(1).ToList()) ||
-               CalculateCalibration(target, long.Parse(acc.ToString() + nums[0]), nums.Skip(1).ToList());
+        if (currentTotal > target) return false;
+        if (nums.Count == 0) return target == currentTotal;
+
+        List<long> remainingNums = nums.GetRange(1, nums.Count - 1);
+        return CalculateCalibration(target, currentTotal + nums[0], remainingNums) ||
+               CalculateCalibration(target, currentTotal * nums[0], remainingNums) ||
+               CalculateCalibration(target, long.Parse(currentTotal.ToString() + nums[0]), remainingNums);
     }
 }

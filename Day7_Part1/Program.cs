@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 class Program
@@ -15,23 +14,43 @@ class Program
             return;
         }
         string input = File.ReadAllText(filePath);
-        Console.WriteLine("The Total Caliration Result is : " + Calculate(input, CalculateCalibration));
-
+        Console.WriteLine("The Total Calibration Result is : " + Calculate(input, CalculateCalibration));
     }
 
     static long Calculate(string input, Func<long, long, List<long>, bool> checker)
     {
-        return input.Split('\n')
-            .Select(line => Regex.Matches(line, @"\d+").Select(m => long.Parse(m.Value)).ToList())
-            .Where(parts => parts.Count > 1 && checker(parts[0], parts[1], parts.Skip(2).ToList()))
-            .Sum(parts => parts[0]);
+        long sum = 0;
+
+        // Split the input into lines
+        string[] lines = input.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (string line in lines)
+        {
+           //extract only the numbers 
+            MatchCollection matches = Regex.Matches(line, @"\d+");
+            List<long> parts = new List<long>();
+            foreach (Match match in matches)
+            {
+                parts.Add(long.Parse(match.Value));
+            }
+
+            // Check if there are more than one number and if the checker returns true
+            if (parts.Count > 1 && checker(parts[0], parts[1], parts.GetRange(2, parts.Count - 2)))
+            {
+                sum += parts[0];
+            }
+        }
+
+        return sum;
     }
 
-    static bool CalculateCalibration(long target, long acc, List<long> nums)
+    static bool CalculateCalibration(long target, long currentTotal, List<long> nums)
     {
-        if (!nums.Any()) return target == acc;
-        return CalculateCalibration(target, acc + nums[0], nums.Skip(1).ToList()) ||
-               CalculateCalibration(target, acc * nums[0], nums.Skip(1).ToList());
+        if (nums.Count == 0) return target == currentTotal;
+
+        // Recursive calls for addition and multiplication
+        long firstNum = nums[0];
+        List<long> remainingNums = nums.GetRange(1, nums.Count - 1);
+        return CalculateCalibration(target, currentTotal + firstNum, remainingNums) ||
+               CalculateCalibration(target, currentTotal * firstNum, remainingNums);
     }
 }
-   

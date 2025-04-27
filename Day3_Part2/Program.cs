@@ -23,19 +23,25 @@ class Program
 
     static long Solve(string input, string rx)
     {
-        var matches = Regex.Matches(input, rx, RegexOptions.Multiline);
+        var matches = Regex.Matches(input, rx, RegexOptions.Multiline); // Find pieces of text matching the pattern.
 
-        return matches.Aggregate(
-            (enabled: true, res: 0L),
-            (acc, m) =>
-                (m.Value, acc.res, acc.enabled) switch
+        return matches.Aggregate( // Combine results step by step.
+            (enabled: true, res: 0L), // Start with calculations enabled and result at 0.
+            (acc, m) => { // For each match, update the result based on the match value.
+                var currentMatch = m.Value;
+                if (currentMatch == "don't()")
+                    return (false, acc.res); // Stop calculating.
+                else if (currentMatch == "do()")
+                    return (true, acc.res); // Resume calculating.
+                else if (acc.enabled) // Only calculate when enabled.
                 {
-                    ("don't()", _, _) => (false, acc.res),
-                    ("do()", _, _) => (true, acc.res),
-                    (_, var res, true) => (true, res + int.Parse(m.Groups[1].Value) * int.Parse(m.Groups[2].Value)),
-                    _ => acc
-                },
-            acc => acc.res
+                    var factor1 = int.Parse(m.Groups[1].Value); // Get the first number from the match.
+                    var factor2 = int.Parse(m.Groups[2].Value); // Get the second number from the match.
+                    return (true, acc.res + factor1 * factor2); // Add their product to the result.
+                }
+                return acc; 
+            },
+            acc => acc.res // After processing all matches, return the final result.
         );
     }
 }

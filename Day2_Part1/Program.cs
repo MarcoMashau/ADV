@@ -29,11 +29,11 @@ class RedNosedReactor
         let samples = line.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)
         select samples.ToArray();
 
-    static IEnumerable<int[]> Attenuate(int[] samples) =>
-        from i in Enumerable.Range(0, samples.Length)
-        let before = samples.Take(i)
-        let after = samples.Skip(i + 1)
-        select before.Concat(after).ToArray();
+    //static IEnumerable<int[]> Attenuate(int[] samples) =>
+    //    from i in Enumerable.Range(0, samples.Length)
+    //    let before = samples.Take(i)
+    //    let after = samples.Skip(i + 1)
+    //    select before.Concat(after).ToArray();
 
     static bool Valid(int[] samples)
     {

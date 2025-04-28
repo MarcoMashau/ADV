@@ -31,9 +31,8 @@ namespace AdventOfCode
 
         public Solution Solve(string input)
         {
-            var span = input.AsSpan();
-            var stones1 = new Dictionary<long, long>(1024 * 9);
-            var stones2 = new Dictionary<long, long>(); // Removed use of 'Capacity'
+            var stones1 = new Dictionary<long, long>();
+            var stones2 = new Dictionary<long, long>(); 
 
             foreach (var range in input.Split(' '))
             {

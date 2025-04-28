@@ -30,7 +30,7 @@ namespace AdventOfCode
         public Solution Solve(char[,] grid)
         {
             var sample = 0;
-            var visited = new HashSet<int>(128);
+            var visited = new HashSet<int>();
 
             int height = grid.GetLength(0);
             int width = grid.GetLength(1);

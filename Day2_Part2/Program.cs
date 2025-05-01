@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-class RedNosedReactor
+class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Day2.txt");
 
@@ -16,31 +14,84 @@ class RedNosedReactor
         }
 
         string input = File.ReadAllText(filePath);
+        string[] reportLines = input.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        int safeCount = 0;
 
+        foreach (string line in reportLines)
+        {
+            int[] levels = ReportChecker(line);
+            if (IsValid(levels) || CanBeMadeSafe(levels))
+            {
+                safeCount++;
+            }
+        }
 
-        int safeRep = ReportChecker(input);
-        Console.WriteLine($"The No. Of Safe Reports is : {safeRep}");
+        Console.WriteLine($"Safe Reports: {safeCount}");
     }
 
-    public static int ReportChecker(string input) =>
-        ParseSamples(input).Count(samples => Attenuate(samples).Any(Valid));
-
-    static IEnumerable<int[]> ParseSamples(string input) =>
-        from line in input.Split("\n", StringSplitOptions.RemoveEmptyEntries)
-        let samples = line.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)
-        select samples.ToArray();
-
-    static IEnumerable<int[]> Attenuate(int[] samples) =>
-        from i in Enumerable.Range(0, samples.Length)
-        let before = samples.Take(i)
-        let after = samples.Skip(i + 1)
-        select before.Concat(after).ToArray();
-
-    static bool Valid(int[] samples)
+    static int[] ReportChecker(string line)
     {
-        var pairs = samples.Zip(samples.Skip(1), (first, second) => (First: first, Second: second));
-        return
-            pairs.All(p => 1 <= p.Second - p.First && p.Second - p.First <= 3) || // Increasing
-            pairs.All(p => 1 <= p.First - p.Second && p.First - p.Second <= 3);   // Decreasing
+        string[] parts = line.Trim().Split(' ');
+        int[] levels = new int[parts.Length];
+
+        for (int i = 0; i < parts.Length; i++)
+        {
+            levels[i] = int.Parse(parts[i]);
+        }
+
+        return levels;
+    }
+
+    static bool IsValid(int[] levels)
+    {
+        if (levels.Length < 2)
+        {
+            return false; // Too short to evaluate
+        }
+
+        bool isIncreasing = levels[1] > levels[0];
+        bool isDecreasing = levels[1] < levels[0];
+
+        for (int i = 1; i < levels.Length; i++)
+        {
+            int difference = levels[i] - levels[i - 1];
+            bool? increasingDeceiver = isIncreasing && difference < 0 ? true : false;
+            bool? decreasingDeceiver = isDecreasing && difference > 0 ? true : false;
+
+            if (difference < -3 || difference == 0 || difference > 3)
+            {
+                return false;
+            }
+
+            if ((bool)increasingDeceiver || (bool)decreasingDeceiver)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static bool CanBeMadeSafe(int[] levels)
+    {
+        for (int i = 0; i < levels.Length; i++)
+        {
+            int[] modifiedLevels = RemoveIndex(levels, i);
+            if (IsValid(modifiedLevels))
+                return true;
+        }
+
+        return false;
+    }
+
+    static int[] RemoveIndex(int[] array, int index)
+    {
+        int[] newArray = new int[array.Length - 1];
+        for (int i = 0, j = 0; i < array.Length; i++)
+        {
+            if (i == index) continue;
+            newArray[j++] = array[i];
+        }
+        return newArray;
     }
 }
